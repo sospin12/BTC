@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#14213d">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Mis BTC">
+<title>Mis BTC</title>
+<style>
+:root{--bg:#f3f1ec;--ink:#14213d;--mut:#6b7280;--card:#fff;--line:#dcd8cf;--acc:#e08a00;--ok:#1b7f5c;--bad:#b3261e}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1424;--ink:#eef0f6;--mut:#9aa3b8;--card:#17203a;--line:#2a3558;--acc:#f5a524;--ok:#4cc79a;--bad:#ff8a80}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;padding:env(safe-area-inset-top) 0 calc(env(safe-area-inset-bottom) + 24px)}
+main{max-width:520px;margin:0 auto;padding:16px}
+.hero{padding:20px 4px 8px}
+.hero small{color:var(--mut);font-size:14px}
+.big{font:700 44px/1.1 ui-rounded,system-ui,sans-serif;letter-spacing:-1px;margin:4px 0}
+.big span{font-size:18px;color:var(--mut);font-weight:600;letter-spacing:0}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.stat small{color:var(--mut);display:block;font-size:13px}.stat b{font-size:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:14px}
+h2{font-size:17px;margin:0 0 10px}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
+input{width:100%;font:inherit;font-size:17px;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink)}
+input:focus,button:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:13px 16px;background:var(--ink);color:var(--bg);cursor:pointer}
+button.sec{background:transparent;color:var(--ink);border:1px solid var(--line)}
+button.full{width:100%;margin-top:14px}
+.calc{font-size:14px;color:var(--mut);margin-top:8px;min-height:20px}
+.sim{background:color-mix(in srgb,var(--acc) 14%,var(--card));border-color:var(--acc)}
+.sim .out{font-size:15px;margin-top:10px}
+.it{display:flex;justify-content:space-between;gap:8px;padding:12px 0;border-top:1px solid var(--line)}
+.it:first-of-type{border-top:0}
+.it .l small{color:var(--mut);display:block}
+.it .r{text-align:right}
+.it button{padding:6px 10px;font-size:13px;margin-top:6px}
+.empty{color:var(--mut);padding:8px 0}
+.up{color:var(--ok)}.down{color:var(--bad)}
+</style></head><body><main>
+<div class="hero">
+  <small>Precio medio de compra</small>
+  <div class="big" id="avg">—<span> USDT</span></div>
+  <div class="row" style="margin-top:12px">
+    <div class="stat"><small>Invertido</small><b id="inv">0</b></div>
+    <div class="stat"><small>BTC acumulado</small><b id="btc">0</b></div>
+    <div class="stat"><small>Compras</small><b id="n">0</b></div>
+  </div>
+</div>
+
+<div class="card" id="live">
+  <div class="row" style="align-items:center">
+    <div><small style="color:var(--mut)">Precio actual BTC</small><div style="font-size:24px;font-weight:700" id="lp">—</div><small id="lt" style="color:var(--mut)"></small></div>
+    <div style="text-align:right"><small style="color:var(--mut)">Ganancia / pérdida</small><div style="font-size:20px;font-weight:700" id="pl">—</div><small id="pp" style="color:var(--mut)"></small></div>
+  </div>
+  <button class="sec full" id="rf">Actualizar precio</button>
+</div>
+
+<div class="card" id="form">
+  <h2 id="ft">Nueva compra</h2>
+  <label>Fecha</label><input type="date" id="d">
+  <label>Precio de compra (USDT por BTC)</label><input id="p" inputmode="decimal" placeholder="ej. 98500">
+  <label>Monto invertido (USDT)</label><input id="u" inputmode="decimal" placeholder="ej. 100">
+  <div class="calc" id="calc"></div>
+  <div class="row"><button class="full" id="save">Guardar compra</button><button class="full sec" id="cancel" hidden>Cancelar</button></div>
+</div>
+
+<div class="card sim">
+  <h2>¿Y si compro ahora?</h2>
+  <div class="row">
+    <div><label>Precio (USDT)</label><input id="sp" inputmode="decimal"></div>
+    <div><label>Monto (USDT)</label><input id="su" inputmode="decimal"></div>
+  </div>
+  <div class="out" id="sout">Escribe precio y monto para ver tu nuevo promedio.</div>
+</div>
+
+<div class="card"><h2>Historial</h2><div id="list"></div></div>
+
+<div class="card"><h2>Copia de seguridad</h2>
+  <div class="row"><button class="sec" id="exp">Descargar copia</button><button class="sec" id="csv">Exportar CSV</button></div>
+  <button class="sec full" id="imp">Restaurar copia</button>
+  <input type="file" id="file" accept=".json" hidden>
+</div>
+</main>
+<script>
+const K='btc_compras_v1';
+let L=[];try{L=JSON.parse(localStorage.getItem(K)||'[]')}catch(e){}
+let edit=null,live=0;
+const $=i=>document.getElementById(i);
+const num=v=>{v=String(v).trim().replace(/\s/g,'');if(v.includes(',')&&v.includes('.'))v=v.replace(/\./g,'').replace(',','.');else v=v.replace(',','.');return parseFloat(v)};
+const f=(n,d=2)=>n.toLocaleString('es-CO',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fb=n=>n.toLocaleString('es-CO',{minimumFractionDigits:8,maximumFractionDigits:8});
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(L))}catch(e){alert('No se pudo guardar en este navegador')}};
+const tot=()=>{let u=0,b=0;L.forEach(c=>{u+=c.usdt;b+=c.usdt/c.price});return{u,b,avg:b?u/b:0}};
+function render(){
+  const t=tot();
+  $('avg').innerHTML=(t.b?f(t.avg):'—')+'<span> USDT</span>';
+  $('inv').textContent=f(t.u)+' USDT';$('btc').textContent=t.b?fb(t.b).replace(/0+$/,'0'):'0';$('n').textContent=L.length;
+  const s=[...L].sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+  $('list').innerHTML=s.length?s.map(c=>`<div class="it"><div class="l"><b>${c.date}</b><small>${fb(c.usdt/c.price)} BTC</small></div><div class="r"><b>${f(c.usdt)} USDT</b><small style="color:var(--mut);display:block">a ${f(c.price)}</small><button class="sec" onclick="ed(${c.id})">Editar</button> <button class="sec" onclick="del(${c.id})">Borrar</button></div></div>`).join(''):'<div class="empty">Aún no registras compras. Agrega la primera arriba.</div>';
+  sim();pl();
+}
+function pl(){const t=tot();if(!live||!t.b){$('pl').textContent='—';$('pp').textContent='';return}
+  const v=t.b*live-t.u,pc=v/t.u*100;$('pl').className=v>=0?'up':'down';$('pl').textContent=(v>=0?'+':'')+f(v)+' USDT';$('pp').textContent=(pc>=0?'+':'')+f(pc)+'% · vale '+f(t.b*live)+' USDT'}
+async function price(){
+  const urls=[['https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT',d=>+d.price],['https://api.coinbase.com/v2/prices/BTC-USDT/spot',d=>+d.data.amount]];
+  $('lt').textContent='Actualizando…';
+  for(const [u,g] of urls){try{const r=await fetch(u,{cache:'no-store'});const p=g(await r.json());if(p>0){live=p;$('lp').textContent=f(p)+' USDT';$('lt').textContent='Actualizado '+new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
+    if(!edit&&!$('p').value){$('p').value=p;calc()} if(!$('sp').value){$('sp').value=p;sim()} pl();return}}catch(e){}}
+  $('lt').textContent='Sin conexión: no se pudo actualizar'}
+$('rf').onclick=price;
+function calc(){const p=num($('p').value),u=num($('u').value);$('calc').textContent=p>0&&u>0?'Recibes '+fb(u/p)+' BTC':''}
+function sim(){const p=num($('sp').value),u=num($('su').value),o=$('sout');
+  if(!(p>0&&u>0)){o.textContent='Escribe precio y monto para ver tu nuevo promedio.';return}
+  const t=tot(),nb=t.b+u/p,na=(t.u+u)/nb,d=t.b?na-t.avg:0;
+  o.innerHTML='Nuevo promedio: <b>'+f(na)+' USDT</b>'+(t.b?` (<span class="${d<=0?'up':'down'}">${d>0?'+':''}${f(d)}</span>)`:'')+'<br>Recibes '+fb(u/p)+' BTC';}
+function reset(){edit=null;$('ft').textContent='Nueva compra';$('save').textContent='Guardar compra';$('cancel').hidden=true;$('p').value=live||'';$('u').value='';$('d').value=new Date().toISOString().slice(0,10);calc()}
+$('save').onclick=()=>{const p=num($('p').value),u=num($('u').value),d=$('d').value;
+  if(!(p>0)||!(u>0)||!d){alert('Completa fecha, precio y monto con valores mayores a cero.');return}
+  if(edit){const c=L.find(x=>x.id===edit);Object.assign(c,{date:d,price:p,usdt:u})}else L.push({id:Date.now(),date:d,price:p,usdt:u});
+  save();reset();render()};
+$('cancel').onclick=reset;
+window.ed=id=>{const c=L.find(x=>x.id===id);edit=id;$('d').value=c.date;$('p').value=c.price;$('u').value=c.usdt;$('ft').textContent='Editar compra';$('save').textContent='Guardar cambios';$('cancel').hidden=false;calc();scrollTo({top:0,behavior:'smooth'})};
+window.del=id=>{if(confirm('¿Borrar esta compra?')){L=L.filter(x=>x.id!==id);save();render()}};
+['p','u'].forEach(i=>$(i).oninput=calc);['sp','su'].forEach(i=>$(i).oninput=sim);
+function dl(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click()}
+$('exp').onclick=()=>dl('btc-copia-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify(L),'application/json');
+$('csv').onclick=()=>dl('btc-compras.csv','fecha,precio_usdt,monto_usdt,btc\n'+[...L].sort((a,b)=>a.date.localeCompare(b.date)).map(c=>[c.date,c.price,c.usdt,(c.usdt/c.price).toFixed(8)].join(',')).join('\n'),'text/csv');
+$('imp').onclick=()=>$('file').click();
+$('file').onchange=e=>{const r=new FileReader();r.onload=()=>{try{const a=JSON.parse(r.result);if(!Array.isArray(a)||a.some(c=>!(c.price>0&&c.usdt>0&&c.date)))throw 0;if(confirm('Esto reemplaza tu historial actual con '+a.length+' compras. ¿Continuar?')){L=a;save();render()}}catch(x){alert('El archivo no es una copia válida.')}};r.readAsText(e.target.files[0]);e.target.value=''};
+reset();render();price();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
+</script></body></html>
